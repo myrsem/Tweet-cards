@@ -1,50 +1,36 @@
-import useLocalStorage from "./hooks/useLocalStorage";
-import {
-  Container,
-  Card,
-  Logo,
-  Image,
-  Line,
-  Avatar,
-  Wrap,
-  Text,
-  Button,
-} from "./App.styled";
+import { useState, useEffect } from "react";
+import initialUsers from "./users.json";
+import TweetCardsList from "./components/TweetCardsList/TweetCardsList";
+import { Container } from "./App.styled";
 
 const App = () => {
-  const [count, setCount] = useLocalStorage();
-  const [checked, setChecked] = useLocalStorage(true);
+  const [users, setUsers] = useState(
+    () => JSON.parse(localStorage.getItem("users")) ?? initialUsers
+  );
 
-  const follow = () => {
-    setChecked(false);
-    setCount(count + 1);
+  useEffect(() => {
+    localStorage.setItem("users", JSON.stringify(users));
+  }, [users]);
+
+  const toggleFollow = (id) => {
+    setUsers((users) =>
+      users.map((user) => {
+        console.log(user)
+        if (user.id === id) {
+          return {
+            ...user,
+            followers: user.isFollow ? user.followers - 1 : user.followers + 1,
+            isFollow: user.isFollow ? false : true,
+          };
+        }
+        return user;
+      })
+    );
   };
-  const unFollow = () => {
-    setChecked(true);
-    setCount(count - 1);
-  };
-
-  const number = new Intl.NumberFormat("en-US", {}).format(count);
-
+  
   return (
     <Container>
-      <Card>
-        <Logo src="logo.png" alt="GoIT" />
-        <Image src="tweets-background.png" alt="tweets" />
-        <Line />
-        <Avatar src="avatar.png" alt="avatar" />
-        <Wrap>
-          <Text>777 tweets</Text>
-          <Text>{number} Followers</Text>
-        </Wrap>
-        {checked ? (
-          <Button onClick={follow}>Follow</Button>
-        ) : (
-          <Button onClick={unFollow} style={{ backgroundColor: "#5CD3A8" }}>
-            Following
-          </Button>
-        )}
-      </Card>
+      <TweetCardsList users={users} toggleFollow={toggleFollow} />
     </Container>
   );
 };
